@@ -54,7 +54,7 @@ def run(settings: SettingsTraining):
     # model
     model = UNet(in_channels=dataset.input_channels, out_channels=1, depth=3, kernel_size=5).float()
     if settings.case in ["test", "finetune"]:
-        model.load_state_dict(torch.load(f"/scratch/sgs/pelzerja/models/paper23/best_models_2hpnn/{settings.path_to_model}/model.pt", map_location=torch.device(settings.device)))
+        model.load_state_dict(torch.load(os.path.join(settings.path_to_model, "model.pt"), map_location=torch.device(settings.device)))
     model.to(settings.device)
 
     solver = None
@@ -84,6 +84,8 @@ def run(settings: SettingsTraining):
     for which_dataset in ["test", "train", "val"]:
         # visualizations(model, dataloaders[which_dataset], settings.device, plot_path=settings.destination / f"plot_{which_dataset}", amount_datapoints_to_visu=5, pic_format=pic_format)
         times[f"avg_inference_time of {which_dataset}"], summed_error_pic = infer_all_and_summed_pic(model, dataloaders[which_dataset], settings.device)
+        if settings.case == "test" and which_dataset == "test":
+            plot_sample(model, dataloaders[which_dataset], settings.device, amount_plots=5, plot_name=os.path.join("runs", settings.name_folder_destination, f"plot_{which_dataset}"))
         # plot_avg_error_cellwise(dataloaders[which_dataset], summed_error_pic, {"folder" : settings.destination, "format": pic_format})
         errors = measure_loss(model, dataloaders[which_dataset], settings.device)
         print("Visualizations finished")
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     default_raw_dir, args.datasets_path, dataset_prepared_full_path = set_paths(args.dataset_name, args.inputs_prep, args.case_2hp)
 
     # prepare dataset if not done yet OR if test=case do it anyways because of potentially different std,mean,... values than trained with
-    if not os.path.exists(dataset_prepared_full_path) or (args.case == "test" and not args.case_2hp):
+    if not os.path.exists(dataset_prepared_full_path):
         pre_prepare_dataset(args, default_raw_dir, dataset_prepared_full_path)
     print(f"Dataset {dataset_prepared_full_path} prepared")
 
