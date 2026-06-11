@@ -85,7 +85,7 @@ def run(settings: SettingsTraining):
         # visualizations(model, dataloaders[which_dataset], settings.device, plot_path=settings.destination / f"plot_{which_dataset}", amount_datapoints_to_visu=5, pic_format=pic_format)
         times[f"avg_inference_time of {which_dataset}"], summed_error_pic = infer_all_and_summed_pic(model, dataloaders[which_dataset], settings.device)
         if settings.case == "test" and which_dataset == "test":
-            plot_sample(model, dataloaders[which_dataset], settings.device, amount_plots=5, plot_name=os.path.join("runs", settings.name_folder_destination, f"plot_{which_dataset}"))
+            plot_sample(model, dataloaders[which_dataset], settings.device, amount_plots=5, plot_name=os.path.join(settings.name_folder_destination, f"plot_{which_dataset}"))
         # plot_avg_error_cellwise(dataloaders[which_dataset], summed_error_pic, {"folder" : settings.destination, "format": pic_format})
         errors = measure_loss(model, dataloaders[which_dataset], settings.device)
         print("Visualizations finished")
