@@ -5,7 +5,7 @@ from math import inf
 from typing import Dict
 
 import matplotlib as mpl
-mpl.use('pgf')
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -165,7 +165,7 @@ def _plot_avg_error(data, plot_name:str, extent_highs:tuple):
     plt.xlabel("y [m]")
     plt.title("Pixelwise averaged error [°C]")
     _aligned_colorbar()
-    plt.savefig(f"runs/{plot_name}_pixelwise_avg_error.pgf", format="pgf")
+    plt.savefig(f"runs/{plot_name}_pixelwise_avg_error.png")
     plt.savefig(f"runs/{plot_name}_pixelwise_avg_error.png")
 
 def _plot_datafields(data: Dict[str, DataToVisualize], name_pic: str, figsize_x: float = 38.4):
@@ -191,7 +191,7 @@ def _plot_datafields(data: Dict[str, DataToVisualize], name_pic: str, figsize_x:
     # plt.suptitle("Datafields: Inputs, Output, Error")
 
     # plt.show()
-    plt.savefig(f"{name_pic}.pgf", format="pgf")
+    plt.savefig(f"{name_pic}.png")
     # plt.savefig(f"{name_pic}.png")
     # plt.savefig(f"{name_pic}.svg")
 
@@ -222,7 +222,7 @@ def _plot_isolines(data: Dict[str, DataToVisualize], name_pic: str, figsize_x: f
     plt.tight_layout()
 
     # plt.suptitle(f"Isolines of Temperature [°C]")
-    plt.savefig(f"{name_pic}_isolines.pgf", format="pgf")
+    plt.savefig(f"{name_pic}_isolines.png")
     # plt.savefig(f"{name_pic}_isolines.png")
 
 def _isolines_measurements(data: Dict[str, DataToVisualize], name_pic: str, figsize_x: float = 38.4):
@@ -285,7 +285,7 @@ def _plot_temperature_field(data: Dict[str, DataToVisualize], name_pic:str, figs
 
     T_gwf_plus1, T_gwf_plusdiff = datapoint.contourargs["levels"]
     plt.suptitle(f"Temperature field and isolines of {T_gwf_plus1} and {T_gwf_plusdiff} °C")
-    plt.savefig(f"{name_pic}_combined.pgf", format="pgf")
+    plt.savefig(f"{name_pic}_combined.png")
     # plt.savefig(f"{name_pic}_combined.svg")
 
 def _aligned_colorbar(*args, **kwargs):
