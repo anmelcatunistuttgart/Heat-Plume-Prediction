@@ -44,7 +44,7 @@ def pre_prepare_dataset(args, default_raw_dir:str, dataset_prepared_full_path:st
                 "duration of whole process in seconds": time_end}, file)
         
 
-def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str, power2trafo: bool = True, info:dict = None):
+def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str ="", power2trafo: bool = True, info:dict = None):
     """
     Create a dataset from the raw pflotran data in raw_data_path.
     The saved dataset is normalized using the mean and standard deviation, which are saved to info.yaml in the new dataset folder.
@@ -63,7 +63,7 @@ def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str, power2traf
     """
     time_start = time.perf_counter()
     full_raw_path = check_for_dataset(args.raw_dir, args.dataset_name)
-    # dataset_prepared_path = args.datasets_dir.joinpath(args.dataset_name+"_"+args.inputs_prep+args.name_extension)
+    dataset_prepared_path = pathlib.Path(args.datasets_dir).joinpath(args.dataset_name+"_"+args.inputs_prep)
     dataset_prepared_path = pathlib.Path(dataset_prepared_path)
     dataset_prepared_path.mkdir(parents=True, exist_ok=True)
     dataset_prepared_path.joinpath("Inputs").mkdir(parents=True, exist_ok=True)
@@ -395,18 +395,18 @@ def normalize(dataset_path: str, info: dict, total: int = None):
         torch.save(y, label_file)
 
 
-# if __name__ == "__main__":
-#     if os.path.exists("/scratch/sgs/pelzerja/"):
-#         default_raw_dir = "/scratch/sgs/pelzerja/datasets/1hp_boxes"
-#         default_target_dir="/home/pelzerja/pelzerja/test_nn/datasets_prepared/1HP_NN/experiments"
-#     else:
-#         default_raw_dir = "/home/pelzerja/Development/simulation_groundtruth_pflotran/Phd_simulation_groundtruth/datasets/1hp_boxes"
-#         default_target_dir = "/home/pelzerja/Development/datasets_prepared/1HP_NN"
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--raw_dir", type=str, default=default_raw_dir)
-#     parser.add_argument("--datasets_dir", type=str, default=default_target_dir)
-#     parser.add_argument("--dataset_name", type=str, default="benchmark_dataset_2d_10datapoints")
-#     parser.add_argument("--inputs_prep", type=str, default="pksi")
-#     args = parser.parse_args()
-#     args = SettingsPrepare(**vars(args))
-#     prepare_dataset(args)
+if __name__ == "__main__":
+    if os.path.exists("/scratch/sgs/pelzerja/"):
+        default_raw_dir = "/scratch/sgs/pelzerja/datasets/1hp_boxes"
+        default_target_dir="/home/pelzerja/pelzerja/test_nn/datasets_prepared/1HP_NN/experiments"
+    else:
+        default_raw_dir = "/home/pelzerja/Development/simulation_groundtruth_pflotran/Phd_simulation_groundtruth/datasets/1hp_boxes"
+        default_target_dir = "/home/pelzerja/Development/datasets_prepared/1HP_NN"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--raw_dir", type=str, default=default_raw_dir)
+    parser.add_argument("--datasets_dir", type=str, default=default_target_dir)
+    parser.add_argument("--dataset_name", type=str, default="benchmark_dataset_2d_10datapoints")
+    parser.add_argument("--inputs_prep", type=str, default="pksi")
+    args = parser.parse_args()
+    args = SettingsPrepare(**vars(args))
+    prepare_dataset(args)
