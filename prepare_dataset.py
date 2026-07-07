@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import pathlib
+import re
 import time
 
 import h5py
@@ -44,6 +45,21 @@ def pre_prepare_dataset(args, default_raw_dir:str, dataset_prepared_full_path:st
                 "duration of whole process in seconds": time_end}, file)
         
 
+def extract_pflotran_wallclock_seconds(pflotran_out_path: str | os.PathLike) -> float | None:
+    """Extract PFLOTRAN wall-clock runtime in seconds from a pflotran.out file."""
+    path = pathlib.Path(pflotran_out_path)
+    if not path.exists():
+        return None
+
+    for line in path.read_text(errors="replace").splitlines():
+        if "Wall Clock Time" not in line:
+            continue
+        match = re.search(r"Wall Clock Time:\s*([0-9.+-eE]+)\s*\[sec\]", line)
+        if match:
+            return float(match.group(1))
+    return None
+
+
 def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str ="", power2trafo: bool = True, info:dict = None):
     """
     Create a dataset from the raw pflotran data in raw_data_path.
@@ -84,7 +100,12 @@ def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str ="", power2
     output_variables = ["Temperature [C]"]
     datapaths, runs = detect_datapoints(full_raw_path)
     total = len(datapaths)
+    pflotran_runtimes = {}
     for datapath, run in tqdm(zip(datapaths, runs), desc="Converting", total=total):
+        runtime_seconds = extract_pflotran_wallclock_seconds(pathlib.Path(datapath).with_name("pflotran.out"))
+        if runtime_seconds is not None:
+            pflotran_runtimes[run] = runtime_seconds
+
         x = load_data(datapath, time_first, args.inputs, dims)
         y = load_data(datapath, time_steady_state, output_variables, dims)
         loc_hp = get_hp_location(x)
@@ -122,6 +143,15 @@ def prepare_dataset(args: SettingsPrepare, dataset_prepared_path:str ="", power2
                                 "index": n}
                         for n, key in enumerate(output_variables)}
         
+    if pflotran_runtimes:
+        runtime_map = {}
+        for run, runtime_seconds in pflotran_runtimes.items():
+            runtime_map[run] = runtime_seconds
+            runtime_map[f"{run}.pt"] = runtime_seconds
+        info["PFLOTRANWallClockTimeSeconds"] = runtime_map
+        with open(os.path.join(dataset_prepared_path, "hf_runtimes.yaml"), "w") as file:
+            yaml.safe_dump({"PFLOTRANWallClockTimeSeconds": runtime_map}, file)
+
     info["CellsSize"] = cell_size.tolist()
     # change of size possible; order of tensor is in any case the other way around
     assert 1 in y.shape, "y is not expected to have several output parameters"
